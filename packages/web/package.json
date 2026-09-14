@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --force",
     "build": "vite build",
+    "build:pages": "vite build --mode github-pages",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit -p tsconfig.typecheck.json",
     "test": "vitest",

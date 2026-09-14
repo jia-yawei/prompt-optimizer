@@ -13,6 +13,8 @@
     "build:core": "corepack pnpm -F @prompt-optimizer/core build",
     "build:ui": "corepack pnpm -F @prompt-optimizer/ui build",
     "build:web": "corepack pnpm -F @prompt-optimizer/web build",
+    "build:pages": "node scripts/run-many.js build:core build:ui build:web:pages",
+    "build:web:pages": "corepack pnpm -F @prompt-optimizer/web build:pages",
     "dev": "node scripts/run-many.js clean:dist build:core build:ui dev:web",
     "dev:web": "corepack pnpm -F @prompt-optimizer/web dev",
     "test": "corepack pnpm test:unit",

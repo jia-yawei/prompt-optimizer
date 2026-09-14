@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    base: mode === 'github-pages' ? '/prompt-optimizer/' : '/',
     envDir: monorepoRoot,
     plugins: [vue()],
     server: {
