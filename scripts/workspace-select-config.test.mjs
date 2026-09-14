@@ -19,6 +19,10 @@ const requiredBindings = [
   '@config=',
 ]
 
+const expectedSelectorCounts = new Map([
+  ['../packages/ui/src/components/basic-mode/BasicUserWorkspace.vue', 2],
+])
+
 for (const relativePath of workspaceFiles) {
   const absolutePath = fileURLToPath(new URL(relativePath, import.meta.url))
 
@@ -26,7 +30,8 @@ for (const relativePath of workspaceFiles) {
     const source = await readFile(absolutePath, 'utf8')
     const selectors = source.match(/<SelectWithConfig\b[\s\S]*?\/>/g) ?? []
 
-    assert.equal(selectors.length, 3, 'expected optimize-model, template, and test-model selectors')
+    const expectedCount = expectedSelectorCounts.get(relativePath) ?? 3
+    assert.equal(selectors.length, expectedCount, `expected ${expectedCount} configured selectors`)
 
     for (const [index, selector] of selectors.entries()) {
       for (const binding of requiredBindings) {

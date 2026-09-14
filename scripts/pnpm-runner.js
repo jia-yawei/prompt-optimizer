@@ -4,7 +4,7 @@ function getPnpmRunnerSpec(platform = process.platform, env = process.env) {
   if (platform === 'win32') {
     return {
       command: env.ComSpec || env.COMSPEC || 'cmd.exe',
-      argsPrefix: ['/d', '/s', '/c', 'pnpm'],
+      argsPrefix: ['/d', '/s', '/c', 'corepack pnpm'],
       shell: false,
     }
   }

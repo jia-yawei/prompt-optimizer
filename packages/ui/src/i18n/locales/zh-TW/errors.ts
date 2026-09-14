@@ -108,7 +108,6 @@ const messages = {
       "import_format": "上下文匯入格式錯誤: {details}",
       "invalid_store": "上下文存儲資料無效: {details}",
       "storage": "上下文存儲錯誤: {details}",
-      "electron_api_unavailable": "目前環境不支援上下文服務"
     },
     "variable_extraction": {
       "validation": "變量提取請求驗證錯誤: {details}",
@@ -132,7 +131,6 @@ const messages = {
       "invalid_format": "資料格式無效: {details}",
       "import_partial_failed": "匯入完成但有 {count} 個錯誤: {details}",
       "export_failed": "資料匯出失敗: {details}",
-      "electron_api_unavailable": "目前環境不支援資料服務"
     },
     "core": {
       "ipc_serialization_failed": "IPC 序列化失敗: {details}"

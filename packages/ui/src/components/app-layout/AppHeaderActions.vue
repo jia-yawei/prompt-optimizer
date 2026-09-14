@@ -3,32 +3,15 @@
         App 头部操作按钮组件
 
         职责:
-        - 核心功能按钮: 模板管理、历史记录、模型管理、收藏夹、数据管理
-        - 辅助功能: 主题切换、GitHub 链接、语言切换、更新检查
+        - 基础优化功能按钮: 模板管理、历史记录、模型管理
+        - 辅助功能: 主题切换、GitHub 链接、语言切换
 
         设计说明:
         - 从 App.vue 的 #actions slot 提取出来
         - 所有操作通过 emits 通知父组件处理
-        - 收藏夹是页面型目的地，其余管理入口保持弹窗型交互
+        - 管理入口保持弹窗型交互
     -->
-    <!-- 页面型管理入口：会接管主内容区 -->
-    <div class="page-destination-group" data-testid="header-page-destinations">
-        <ActionButtonUI
-            icon="⭐"
-            :text="$t('nav.favorites')"
-            @click="emit('open-favorites')"
-            :type="favoritesActive ? 'primary' : 'default'"
-            data-testid="header-favorites-page-action"
-            size="medium"
-            :ghost="false"
-            :round="true"
-            :title="$t('favorites.page.title')"
-            :aria-current="favoritesActive ? 'page' : undefined"
-            :class="{ 'page-destination-active': favoritesActive }"
-        />
-    </div>
-
-    <!-- 弹窗型管理/配置入口 -->
+    <!-- 保留基础优化所需的管理/配置入口。 -->
     <div class="modal-action-group" data-testid="header-modal-actions">
         <ActionButtonUI
             icon="📝"
@@ -52,27 +35,6 @@
             icon="⚙️"
             :text="$t('nav.modelManager')"
             @click="emit('open-model-manager')"
-            type="default"
-            size="medium"
-            :ghost="false"
-            :round="true"
-        />
-        <NBadge :show="backupReminderDue" dot processing>
-            <ActionButtonUI
-                icon="💾"
-                :text="$t('nav.dataManager')"
-                @click="emit('open-data-manager')"
-                :type="backupReminderDue ? 'warning' : 'default'"
-                size="medium"
-                :ghost="false"
-                :round="true"
-                :title="backupReminderDue ? $t('dataManager.backupReminder.tooltip') : $t('nav.dataManager')"
-            />
-        </NBadge>
-        <ActionButtonUI
-            icon="🔣"
-            :text="$t('nav.variableManager')"
-            @click="emit('open-variables')"
             type="default"
             size="medium"
             :ghost="false"
@@ -181,8 +143,6 @@
             </div>
         </NPopover>
         <LanguageSwitchDropdown />
-        <!-- 自动更新组件 - 仅在Electron环境中显示 -->
-        <UpdaterIcon />
     </div>
 </template>
 
@@ -195,8 +155,8 @@
  * 包含核心功能按钮和辅助功能按钮两部分。
  *
  * @features
- * - 核心功能: 模板管理、历史记录、模型管理、收藏夹、数据管理
- * - 辅助功能: 主题切换、GitHub 链接、语言切换、更新检查
+ * - 基础优化功能: 模板管理、历史记录、模型管理
+ * - 辅助功能: 主题切换、GitHub 链接、语言切换
  * - 所有操作通过 emits 通知父组件
  *
  * @example
@@ -206,8 +166,6 @@
  *     @open-templates="openTemplateManager"
  *     @open-history="historyManager.showHistory = true"
  *     @open-model-manager="modelManager.showConfig = true"
- *     @open-favorites="openFavoritesPage"
- *     @open-data-manager="showDataManager = true"
  *     :app-version="appVersion"
  *     @open-website="openOfficialWebsite"
  *     @open-docs="openDocumentationSite"
@@ -221,19 +179,9 @@ import { ref } from 'vue'
 import ActionButtonUI from '../ActionButton.vue'
 import ThemeToggleUI from '../ThemeToggleUI.vue'
 import LanguageSwitchDropdown from '../LanguageSwitchDropdown.vue'
-import UpdaterIcon from '../UpdaterIcon.vue'
-import { NBadge, NButton, NPopover, NTag } from 'naive-ui'
+import { NButton, NPopover, NTag } from 'naive-ui'
 
-interface Props {
-    appVersion: string
-    favoritesActive?: boolean
-    backupReminderDue?: boolean
-}
-
-withDefaults(defineProps<Props>(), {
-    favoritesActive: false,
-    backupReminderDue: false,
-})
+defineProps<{ appVersion: string }>()
 
 // ========================
 // Emits 定义
@@ -245,12 +193,6 @@ const emit = defineEmits<{
     'open-history': []
     /** 打开模型管理器 */
     'open-model-manager': []
-    /** 打开收藏夹 */
-    'open-favorites': []
-    /** 打开数据管理器 */
-    'open-data-manager': []
-    /** 打开变量管理器 */
-    'open-variables': []
     /** 打开官网 */
     'open-website': []
     /** 打开文档站 */

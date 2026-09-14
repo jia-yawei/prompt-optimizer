@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { reactive } from 'vue'
 
 const awsS3Mocks = vi.hoisted(() => {
   const send = vi.fn()
@@ -81,7 +80,6 @@ describe('remote backup settings', () => {
 
   afterEach(() => {
     delete (window as unknown as { runtime_config?: Record<string, unknown> }).runtime_config
-    delete (window as unknown as { electronAPI?: unknown }).electronAPI
     delete (globalThis as unknown as { google?: unknown }).google
     globalThis.fetch = originalFetch
     window.localStorage.clear()
@@ -96,16 +94,6 @@ describe('remote backup settings', () => {
 
     expect(getRecommendedRemoteBackupProvider('web')).toBe('google-drive')
     expect(settings.provider.kind).toBe('google-drive')
-  })
-
-  it('disables Google Drive for desktop remote backup defaults', () => {
-    const settings = createDefaultRemoteBackupSettings('desktop')
-
-    expect(getRecommendedRemoteBackupProvider('desktop')).toBe('cloudflare-r2')
-    expect(settings.provider.kind).toBe('cloudflare-r2')
-    expect(normalizeRemoteBackupSettings({
-      provider: { kind: 'google-drive' },
-    }, 'desktop').provider.kind).toBe('cloudflare-r2')
   })
 
   it('creates timestamp-only ZIP backup file names', () => {
@@ -445,146 +433,6 @@ describe('remote backup settings', () => {
     expect((listCommand as InstanceType<typeof awsS3Mocks.ListObjectsV2Command>).input).toMatchObject({
       Bucket: 'po',
       Prefix: 'root/v1/',
-    })
-  })
-
-  it('uses desktop remote storage IPC for Desktop S3-compatible object operations', async () => {
-    const requests: unknown[] = []
-    const binaryBody = new Uint8Array([0, 1, 127, 128, 255])
-    const invoke = vi.fn(async (request: {
-      operation: string
-      path?: string
-      body?: unknown
-      contentType?: string
-      provider?: { kind?: string }
-    }) => {
-      requests.push(request)
-      if (request.operation === 'put') {
-        expect(ArrayBuffer.isView(request.body)).toBe(true)
-        const body = request.body as Uint8Array
-        expect(Array.from(body)).toEqual(Array.from(binaryBody))
-        return {
-          path: request.path,
-          sizeBytes: body.byteLength,
-          contentType: request.contentType,
-        }
-      }
-      if (request.operation === 'get') {
-        return new Uint8Array([111, 107]).buffer
-      }
-      if (request.operation === 'getText') return 'ok'
-      if (request.operation === 'head') return { path: request.path, sizeBytes: 2 }
-      if (request.operation === 'list') return [{ path: 'v1/manifest.json', sizeBytes: 2 }]
-      if (request.operation === 'delete') return null
-      return true
-    })
-    Object.defineProperty(window, 'electronAPI', {
-      configurable: true,
-      value: {
-        remoteStorage: { invoke },
-      },
-    })
-
-    const objectStore = createRemoteObjectStore({
-      kind: 's3-compatible',
-      endpoint: 'https://s3.example.test',
-      region: 'auto',
-      bucket: 'po',
-      accessKeyId: 'ak',
-      secretAccessKey: 'sk',
-      prefix: 'root/',
-      forcePathStyle: true,
-    }, 'desktop')
-
-    await expect(objectStore.put('v1/assets/image.bin', binaryBody, {
-      contentType: 'application/octet-stream',
-    })).resolves.toMatchObject({
-      path: 'v1/assets/image.bin',
-      sizeBytes: binaryBody.byteLength,
-      contentType: 'application/octet-stream',
-    })
-    await expect(objectStore.get('v1/manifest.json').then((buffer) => new TextDecoder().decode(buffer))).resolves.toBe('ok')
-    await expect(objectStore.getText('v1/manifest.json')).resolves.toBe('ok')
-    await expect(objectStore.head?.('v1/manifest.json')).resolves.toEqual({
-      path: 'v1/manifest.json',
-      sizeBytes: 2,
-    })
-    await expect(objectStore.list('v1')).resolves.toEqual([{ path: 'v1/manifest.json', sizeBytes: 2 }])
-    await expect(objectStore.delete?.('v1/manifest.json')).resolves.toBeUndefined()
-
-    expect(awsS3Mocks.clients).toHaveLength(0)
-    expect(requests).toMatchObject([
-      { operation: 'put', path: 'v1/assets/image.bin', provider: { kind: 's3-compatible' } },
-      { operation: 'get', path: 'v1/manifest.json', provider: { kind: 's3-compatible' } },
-      { operation: 'getText', path: 'v1/manifest.json', provider: { kind: 's3-compatible' } },
-      { operation: 'head', path: 'v1/manifest.json', provider: { kind: 's3-compatible' } },
-      { operation: 'list', path: 'v1', provider: { kind: 's3-compatible' } },
-      { operation: 'delete', path: 'v1/manifest.json', provider: { kind: 's3-compatible' } },
-    ])
-  })
-
-  it('uses desktop remote storage IPC for Desktop WebDAV and rejects Desktop Google Drive', async () => {
-    const invoke = vi.fn(async (request: { operation: string }) => {
-      if (request.operation === 'list') return []
-      return null
-    })
-    Object.defineProperty(window, 'electronAPI', {
-      configurable: true,
-      value: {
-        remoteStorage: { invoke },
-      },
-    })
-
-    const webDavStore = createRemoteObjectStore({
-      kind: 'webdav',
-      endpoint: 'https://dav.example.test',
-      username: 'user',
-      password: 'pass',
-      directory: 'prompt-optimizer-backups',
-    }, 'desktop')
-
-    await expect(webDavStore.list('v1')).resolves.toEqual([])
-    expect(invoke).toHaveBeenCalledWith(expect.objectContaining({
-      operation: 'list',
-      path: 'v1',
-      provider: expect.objectContaining({ kind: 'webdav' }),
-    }))
-
-    expect(() => createRemoteObjectStore({ kind: 'google-drive' }, 'desktop')).toThrow(
-      'Google Drive remote backup is only supported in the Web version',
-    )
-  })
-
-  it('sends plain provider config objects over desktop IPC when Vue state is reactive', async () => {
-    const invoke = vi.fn(async (request: unknown) => {
-      expect(() => structuredClone(request)).not.toThrow()
-      return []
-    })
-    Object.defineProperty(window, 'electronAPI', {
-      configurable: true,
-      value: {
-        remoteStorage: { invoke },
-      },
-    })
-
-    const provider = reactive({
-      kind: 'webdav' as const,
-      endpoint: 'https://dav.example.test',
-      username: 'user',
-      password: 'pass',
-      directory: 'prompt-optimizer-backups',
-    })
-    const objectStore = createRemoteObjectStore(provider, 'desktop')
-    await expect(objectStore.list('v1')).resolves.toEqual([])
-
-    const request = invoke.mock.calls[0]?.[0] as { provider: unknown }
-    expect(request.provider).not.toBe(provider)
-    expect(request.provider).toEqual({
-      kind: 'webdav',
-      endpoint: 'https://dav.example.test',
-      username: 'user',
-      password: 'pass',
-      directory: 'prompt-optimizer-backups',
     })
   })
 

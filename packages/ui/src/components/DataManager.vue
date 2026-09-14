@@ -558,7 +558,7 @@
                   {{ $t('dataManager.remote.forcePathStyle') }}
                 </NCheckbox>
                 <NText depth="3" class="remote-field-help">
-                  {{ isDesktopRuntime ? $t('dataManager.remote.s3DesktopHelp') : $t('dataManager.remote.s3WebHelp') }}
+                  {{ $t('dataManager.remote.s3WebHelp') }}
                 </NText>
               </div>
             </template>
@@ -584,7 +584,7 @@
                   <NInput v-model:value="remoteSettings.provider.directory" clearable @update:value="markRemoteSettingsDirty" />
                 </div>
                 <NText depth="3" class="remote-field-help">
-                  {{ isDesktopRuntime ? $t('dataManager.remote.webdavDesktopHelp') : $t('dataManager.remote.webdavWebHelp') }}
+                  {{ $t('dataManager.remote.webdavWebHelp') }}
                 </NText>
               </div>
             </template>
@@ -736,30 +736,6 @@
         </div>
       </section>
 
-      <section v-if="isDesktopRuntime" class="data-manager-section data-manager-section--desktop">
-        <div class="desktop-storage-row">
-          <div class="storage-path-block">
-            <NText depth="3" class="storage-path-label">{{ $t('dataManager.storage.path') }}</NText>
-            <div class="storage-path-value">
-              {{ storageSummary?.desktopInfo?.userDataPath || '—' }}
-            </div>
-          </div>
-
-          <div v-if="desktopBackupItem" class="storage-desktop-stat">
-            <NText depth="3">{{ $t('dataManager.storage.backupData') }}</NText>
-            <div class="storage-desktop-stat-value">
-              {{ formatStorageItemBytes(desktopBackupItem.bytes) }}
-            </div>
-          </div>
-
-          <NButton size="small" @click="openStorageDir" :disabled="!canUseDesktopStorageTools">
-            <template #icon>
-              <NIcon><Folder /></NIcon>
-            </template>
-            {{ $t('dataManager.storage.openDir') }}
-          </NButton>
-        </div>
-      </section>
     </div>
   </NModal>
 </template>
@@ -773,8 +749,7 @@ import {
   NCollapse, NCollapseItem,
   type UploadFileInfo,
 } from 'naive-ui'
-import { isRunningInElectron } from '@prompt-optimizer/core'
-import { ChevronDown, Clipboard, Download, ExternalLink, Folder, Refresh, Trash, Upload } from '@vicons/tabler'
+import { ChevronDown, Clipboard, Download, ExternalLink, Refresh, Trash, Upload } from '@vicons/tabler'
 import { useToast } from '../composables/ui/useToast'
 import { useConfirmDialog } from '../composables/ui/useConfirmDialog'
 import type { AppServices } from '../types/services'
@@ -844,8 +819,7 @@ const emit = defineEmits<Emits>()
 const { t } = useI18n()
 const toast = useToast()
 const confirmDialog = useConfirmDialog()
-const isDesktopRuntime = isRunningInElectron()
-const remoteRuntime: RemoteBackupRuntime = isDesktopRuntime ? 'desktop' : 'web'
+const remoteRuntime: RemoteBackupRuntime = 'web'
 const DATA_MANAGER_MODAL_MAX_WIDTH = '1200px'
 const dataManagerModalStyle = {
   width: 'calc(100vw - 32px)',
@@ -957,7 +931,6 @@ const storageLabelKeys: Record<StorageBreakdownItemKey, string> = {
   appMainData: 'dataManager.storage.appMainData',
   imageCache: 'dataManager.storage.imageCache',
   favoriteImages: 'dataManager.storage.favoriteImages',
-  backupData: 'dataManager.storage.backupData',
 }
 
 const storageCardItemKeys: StorageBreakdownItemKey[] = ['appMainData', 'imageCache', 'favoriteImages']
@@ -977,9 +950,7 @@ const remoteProviderOptions = computed(() =>
 )
 
 const remoteRecommendationKey = computed(() =>
-  isDesktopRuntime
-    ? 'dataManager.remote.desktopRecommendation'
-    : 'dataManager.remote.webRecommendation'
+  'dataManager.remote.webRecommendation'
 )
 
 const remoteBackupOptions = computed(() =>
@@ -1206,14 +1177,6 @@ const storageCardItems = computed<StorageBreakdownItem[]>(() =>
   )
 )
 
-const desktopBackupItem = computed<StorageBreakdownItem | null>(() =>
-  storageSummary.value?.items.find(item => item.key === 'backupData') ?? null
-)
-
-const canUseDesktopStorageTools = computed(() =>
-  isDesktopRuntime && Boolean(window.electronAPI?.data)
-)
-
 const refreshStorageSummary = async () => {
   try {
     isRefreshingStorage.value = true
@@ -1224,8 +1187,6 @@ const refreshStorageSummary = async () => {
 
     storageSummary.value = await resolveDataManagerStorageBreakdown({
       services: servicesValue,
-      includeBackupData: isDesktopRuntime,
-      electronDataApi: window.electronAPI?.data ?? null,
     })
   } catch (error) {
     console.error('Failed to get storage info:', error)
@@ -1255,15 +1216,10 @@ const persistRemoteSettings = (markDirty = true) => {
 const markRemoteSettingsDirty = () => persistRemoteSettings()
 
 const syncGoogleDriveAuthorizationState = () => {
-  if (isDesktopRuntime && remoteSettings.value.provider.kind === 'google-drive') return
   isGoogleDriveAuthorized.value = isGoogleDriveRemoteBackupAuthorized()
 }
 
 const markGoogleDriveAuthorizationSuccess = () => {
-  if (isDesktopRuntime && remoteSettings.value.provider.kind === 'google-drive') {
-    isGoogleDriveAuthorized.value = true
-    return
-  }
   syncGoogleDriveAuthorizationState()
 }
 
@@ -1275,13 +1231,11 @@ const handleRemoteProviderChange = (value: string) => {
   isRemoteConfigExpanded.value = false
   remoteBackups.value = []
   selectedRemoteBackupId.value = null
-  isGoogleDriveAuthorized.value = isDesktopRuntime && kind === 'google-drive'
-    ? false
-    : isGoogleDriveRemoteBackupAuthorized()
+  isGoogleDriveAuthorized.value = isGoogleDriveRemoteBackupAuthorized()
   persistRemoteSettings()
 }
 
-const getRemoteStore = () => createRemoteObjectStore(remoteSettings.value.provider, remoteRuntime)
+const getRemoteStore = () => createRemoteObjectStore(remoteSettings.value.provider)
 
 const phaseBasePercent: Record<RemoteSnapshotProgressEvent['phase'], number> = {
   prepare: 5,
@@ -1677,11 +1631,6 @@ const handleRemoteCleanup = async () => {
     isCleaningRemoteAssets.value = false
     finishRemoteProgress()
   }
-}
-
-const openStorageDir = () => {
-  if (!isDesktopRuntime || !window.electronAPI?.data) return
-  window.electronAPI.data.openStorageDirectory()
 }
 
 const toExportSectionSelection = (): DataManagerPackageSectionSelection => ({
@@ -2086,44 +2035,6 @@ const getStorageItemDetail = (item: Pick<StorageBreakdownItem, 'key' | 'count'>)
   display: block;
   font-size: 12px;
   margin-top: 6px;
-}
-
-.desktop-storage-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.storage-path-block {
-  min-width: 0;
-  flex: 1;
-}
-
-.storage-path-label {
-  font-size: 12px;
-}
-
-.storage-path-value {
-  word-break: break-all;
-  font-family: monospace;
-  font-size: 12px;
-  margin-top: 4px;
-}
-
-.storage-desktop-stat {
-  min-width: 140px;
-  padding: 10px 12px;
-  border: 1px solid var(--n-border-color);
-  border-radius: 8px;
-  background: var(--n-color-embedded);
-}
-
-.storage-desktop-stat-value {
-  margin-top: 4px;
-  font-size: 18px;
-  font-weight: 600;
 }
 
 .remote-backup-grid {
@@ -2535,10 +2446,6 @@ const getStorageItemDetail = (item: Pick<StorageBreakdownItem, 'key' | 'count'>)
     justify-content: flex-start;
   }
 
-  .desktop-storage-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
 }
 
 @media (max-width: 640px) {

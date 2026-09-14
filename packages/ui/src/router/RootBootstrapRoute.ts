@@ -1,21 +1,10 @@
 import { defineComponent, h, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
-import { useGlobalSettings, type GlobalSettingsApi } from '../stores/settings/useGlobalSettings'
-import { DEFAULT_WORKSPACE_PATH } from './workspaceRoutes'
+import { type GlobalSettingsApi } from '../stores/settings/useGlobalSettings'
 
 export const getInitialRouteFromGlobalSettings = (globalSettings: GlobalSettingsApi) => {
-  const { functionMode, basicSubMode, proSubMode, imageSubMode } = globalSettings.state
-
-  switch (functionMode) {
-    case 'basic':
-      return `/basic/${basicSubMode}`
-    case 'pro':
-      return `/pro/${proSubMode}`
-    case 'image':
-      return `/image/${imageSubMode}`
-    default:
-      return DEFAULT_WORKSPACE_PATH
-  }
+  void globalSettings
+  return '/basic/user'
 }
 
 /**
@@ -34,12 +23,10 @@ export const RootBootstrapRoute = defineComponent({
   name: 'RootBootstrapRoute',
   setup() {
     const router = useRouter()
-    const globalSettings = useGlobalSettings()
     let redirected = false
 
     watchEffect(() => {
       if (redirected) return
-      if (!globalSettings.isInitialized) return
       if (router.currentRoute.value.path !== '/') return
       // In hash mode, when a non-root hash is present (e.g. #/image/text2image),
       // Vue Router may briefly report path === '/' during initial hydration.
@@ -50,9 +37,7 @@ export const RootBootstrapRoute = defineComponent({
         if (hasExplicitHashRoute) return
       }
 
-      const initialRoute = getInitialRouteFromGlobalSettings(globalSettings)
-      if (initialRoute === '/' || !initialRoute) return
-
+      const initialRoute = '/basic/user'
       redirected = true
       void router.replace(initialRoute)
     })

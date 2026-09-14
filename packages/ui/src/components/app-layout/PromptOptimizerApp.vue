@@ -4,12 +4,12 @@
 
         职责:
         - 提供完整的 Prompt Optimizer 应用功能
-        - 统一 web 和 extension 应用的核心逻辑
+        - 管理 Web 应用的核心逻辑
         - 管理所有状态、composables 和事件处理
 
         设计说明:
         - 从 App.vue 提取的核心逻辑
-        - 减少 web/extension 应用的重复代码
+        - 从 App.vue 提取核心应用逻辑
     -->
     <NConfigProvider
         :theme="naiveTheme"
@@ -38,7 +38,6 @@
                 <template #core-nav>
                     <AppCoreNav
                         :workspace-path="activeWorkspaceContextPath"
-                        :allow-workspace-reselect="isFavoritesRoute"
                     />
                 </template>
 
@@ -48,11 +47,6 @@
                         @open-templates="openTemplateManager"
                         @open-history="historyManager.showHistory = true"
                         @open-model-manager="modelManager.showConfig = true"
-                        @open-favorites="openFavoritesPage"
-                        @open-data-manager="showDataManager = true"
-                        @open-variables="handleOpenVariableManager()"
-                        :favorites-active="isFavoritesRoute"
-                        :backup-reminder-due="dataBackupReminderDue"
                         :app-version="appVersion"
                         @open-website="openOfficialWebsite"
                         @open-docs="openDocumentationSite"
@@ -60,13 +54,7 @@
                     />
                 </template>
                 <template #main>
-                    <!-- 🔧 路由架构：使用 RouterView 自动渲染对应的工作区容器 -->
-                    <!-- - /basic/system → BasicSystemWorkspace -->
-                    <!-- - /basic/user → BasicUserWorkspace -->
-                    <!-- - /pro/multi → ContextSystemWorkspace -->
-                    <!-- - /pro/variable → ContextUserWorkspace -->
-                    <!-- - /image/text2image → ImageText2ImageWorkspace -->
-                    <!-- - /image/image2image → ImageImage2ImageWorkspace -->
+                    <!-- 当前应用仅加载基础用户提示词优化工作区。 -->
                     <RouterView v-slot="{ Component, route: viewRoute }">
                         <component
                             :is="Component"
@@ -107,111 +95,6 @@
                 @clear="promptHistory.handleClearHistory"
                 @deleteChain="promptHistory.handleDeleteChain"
             />
-            <DataManagerUI
-                v-if="isReady"
-                v-model:show="showDataManager"
-                @imported="handleDataImported"
-            />
-
-            <!-- 收藏管理对话框 -->
-            <FavoriteManagerUI
-                v-if="isReady"
-                :show="showFavoriteManager"
-                :use-favorite="handleUseFavorite"
-                @update:show="
-                    (v: boolean) => {
-                        if (!v) showFavoriteManager = false;
-                    }
-                "
-            />
-
-            <!-- 保存收藏对话框 -->
-            <SaveFavoriteDialog
-                v-if="isReady"
-                v-model:show="showSaveFavoriteDialog"
-                :content="saveFavoriteData?.content || ''"
-                :original-content="saveFavoriteData?.originalContent || ''"
-                :prefill="saveFavoriteData?.prefill"
-                :candidate-source="saveFavoriteData?.candidateSource"
-                :current-function-mode="routeFunctionMode"
-                :current-optimization-mode="selectedOptimizationMode"
-                @saved="handleSaveFavoriteComplete"
-            />
-
-            <!-- 变量管理弹窗 -->
-            <VariableManagerModal
-                v-if="isReady"
-                v-model:visible="showVariableManager"
-                :variable-manager="variableManager"
-                :focus-variable="focusVariableName"
-            />
-
-            <!-- 🆕 AI 变量提取结果对话框 -->
-            <VariableExtractionResultDialog
-                v-if="isReady"
-                v-model:show="variableExtraction.showResultDialog.value"
-                :result="variableExtraction.extractionResult.value"
-                @confirm="variableExtraction.confirmBatchCreate"
-            />
-
-            <!-- 工具管理弹窗 -->
-            <ToolManagerModal
-                v-if="isReady"
-                v-model:visible="showToolManager"
-                :tools="optimizationContextTools"
-                @confirm="handleToolManagerConfirm"
-                @cancel="showToolManager = false"
-            />
-
-            <!-- 上下文编辑器弹窗 -->
-            <ContextEditor
-                v-if="isReady"
-                v-model:visible="showContextEditor"
-                :state="contextEditorState"
-                :services="servicesForContextEditor"
-                :variable-manager="variableManager"
-                :optimization-mode="selectedOptimizationMode"
-                :scan-variables="
-                    (content) =>
-                        variableManager?.variableManager.value?.scanVariablesInContent(
-                            content,
-                        ) || []
-                "
-                :replace-variables="
-                    (content, vars) =>
-                        variableManager?.variableManager.value?.replaceVariables(
-                            content,
-                            vars,
-                        ) || content
-                "
-                :isPredefinedVariable="
-                    (name) =>
-                        variableManager?.variableManager.value?.isPredefinedVariable(
-                            name,
-                        ) || false
-                "
-                :defaultTab="contextEditorDefaultTab"
-                :only-show-tab="contextEditorOnlyShowTab"
-                :title="contextEditorTitle"
-                @update:state="handleContextEditorStateUpdateSafe"
-                @save="handleContextEditorSaveSafe"
-                @cancel="handleContextEditorCancel"
-                @open-variable-manager="handleOpenVariableManager"
-            />
-
-            <!-- 提示词预览面板 -->
-            <PromptPreviewPanel
-                v-if="isReady"
-                :show="showPreviewPanel"
-                @update:show="showPreviewPanel = $event"
-                :previewContent="promptPreview.previewContent.value"
-                :missingVariables="promptPreview.missingVariables.value"
-                :hasMissingVariables="promptPreview.hasMissingVariables.value"
-                :variableStats="promptPreview.variableStats.value"
-                :contextMode="contextMode"
-                :renderPhase="renderPhase"
-            />
-
             <!-- 关键:使用NGlobalStyle同步全局样式到body,消除CSS依赖 -->
             <NGlobalStyle />
         </template>
@@ -223,7 +106,7 @@
  * PromptOptimizerApp - 主应用组件
  *
  * @description
- * 从 App.vue 提取的核心应用逻辑，统一 web 和 extension 应用。
+ * 从 App.vue 提取的 Web 应用核心逻辑。
  * 包含所有状态管理、composables 和事件处理。
  */
 import {

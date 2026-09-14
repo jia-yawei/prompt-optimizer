@@ -157,7 +157,7 @@ export function usePromptOptimizer(
             if (!currentTemplate) return
 
             try {
-              // Create new record chain with enhanced metadata，ElectronProxy会自动处理序列化
+              // Create a new record chain with enhanced metadata.
               // 依据 functionMode 与当前模板类型决定历史记录类型
               const isPro = (functionMode.value as FunctionMode) === 'pro'
               const baseType = (optimizationMode.value === 'system' ? 'optimize' : 'userOptimize') as PromptRecordType
@@ -392,7 +392,7 @@ export function usePromptOptimizer(
             }
 
             try {
-              // 使用正确的addIteration方法来保存迭代历史，ElectronProxy会自动处理序列化
+              // Use addIteration to persist the iteration history.
               const iterationData = {
                 chainId: state.currentChainId,
                 originalPrompt: originalPrompt,

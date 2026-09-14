@@ -1096,7 +1096,6 @@ const applyMigration = async () => {
       }
     }
 
-    // ElectronProxy会自动处理序列化，这里不需要手动处理
     await getTemplateManager.value.saveTemplate(updatedTemplate)
     await loadTemplates()
 

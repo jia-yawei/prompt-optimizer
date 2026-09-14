@@ -21,10 +21,10 @@ test('parseArgs supports parallel aliases', () => {
   });
 });
 
-test('getRunnerSpec avoids shell mode while preserving Windows pnpm compatibility', () => {
+test('getRunnerSpec avoids shell mode while using Corepack on Windows', () => {
   assert.deepEqual(getRunnerSpec('win32', { ComSpec: 'C:\\Windows\\System32\\cmd.exe' }), {
     command: 'C:\\Windows\\System32\\cmd.exe',
-    argsPrefix: ['/d', '/s', '/c', 'pnpm'],
+    argsPrefix: ['/d', '/s', '/c', 'corepack pnpm'],
     shell: false,
   });
   assert.deepEqual(getRunnerSpec('linux'), {

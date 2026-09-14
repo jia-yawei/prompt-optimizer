@@ -6,20 +6,8 @@ const targetVersion = rootPackage.version;
 
 console.log(`🔄 开始同步版本号至 ${targetVersion}`);
 
-// 需要同步版本的文件列表
-const versionFiles = [
-  {
-    path: 'packages/extension/public/manifest.json',
-    field: 'version',
-    description: '浏览器扩展清单文件'
-  },
-  {
-    path: 'packages/desktop/package.json',
-    field: 'version',
-    description: 'Desktop应用包文件'
-  }
-  // 未来可以添加更多需要同步的文件
-];
+// Web-only build has no secondary client manifests to synchronize.
+const versionFiles = [];
 
 let syncCount = 0;
 let errorCount = 0;

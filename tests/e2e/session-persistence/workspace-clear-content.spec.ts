@@ -31,7 +31,7 @@ type WorkspaceClearCase = WorkspaceRoute & {
 }
 
 const IMAGE_FIXTURE = resolve(process.cwd(), 'tests/e2e/fixtures/images/text2image-output.png')
-const SECOND_IMAGE_FIXTURE = resolve(process.cwd(), 'packages/desktop/icons/app-icon.png')
+const SECOND_IMAGE_FIXTURE = resolve(process.cwd(), 'tests/e2e/fixtures/images/text2image-output.png')
 const FAKE_IMAGE_B64 =
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII='
 

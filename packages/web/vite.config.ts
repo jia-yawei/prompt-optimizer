@@ -1,7 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
-import path from 'path'
 import { DEFAULT_VITE_ENV } from '../core/src/utils/default-env'
 
 // https://vitejs.dev/config/
@@ -41,10 +40,9 @@ export default defineConfig(({ mode }) => {
       preserveSymlinks: true,
       alias: {
         '@': resolve(__dirname, 'src'),
-        '@prompt-optimizer/core': path.resolve(__dirname, '../core'),
-        '@prompt-optimizer/ui': path.resolve(__dirname, '../ui'),
-        '@prompt-optimizer/web': path.resolve(__dirname, '../web'),
-        '@prompt-optimizer/extension': path.resolve(__dirname, '../extension')
+        '@prompt-optimizer/core': resolve(__dirname, '../core'),
+        '@prompt-optimizer/ui': resolve(__dirname, '../ui'),
+        '@prompt-optimizer/web': resolve(__dirname, '../web')
       }
     },
     define: {

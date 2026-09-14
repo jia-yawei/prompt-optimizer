@@ -304,7 +304,7 @@ import { computed, inject, nextTick, h } from 'vue'
 
 import { useI18n } from 'vue-i18n'
 import { useToast } from '../composables/ui/useToast'
-import { isRunningInElectron, validateCustomRequestHeaders, type CustomRequestHeaderInput } from '@prompt-optimizer/core'
+import { validateCustomRequestHeaders, type CustomRequestHeaderInput } from '@prompt-optimizer/core'
 import {
   NModal,
   NForm,
@@ -537,9 +537,8 @@ const handleTestFormConnection = async () => {
     await testFormConnection()
   }
 
-  if (!isRunningInElectron()) {
-    const provider = manager.selectedProvider.value
-    if (provider?.corsRestricted) {
+  const provider = manager.selectedProvider.value
+  if (provider?.corsRestricted) {
       const providerName = getProviderDisplayName(provider, t, 'Unknown Provider')
       dialog.warning({
         title: t('modelManager.corsRestrictedTag'),
@@ -552,7 +551,6 @@ const handleTestFormConnection = async () => {
         }
       })
       return
-    }
   }
   await runTest()
 }

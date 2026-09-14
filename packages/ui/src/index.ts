@@ -87,8 +87,6 @@ export { default as FunctionModeSelector } from "./components/FunctionModeSelect
 export { default as TextDiffUI } from "./components/TextDiff.vue";
 export { default as OutputDisplayFullscreen } from "./components/OutputDisplayFullscreen.vue";
 export { default as OutputDisplayCore } from "./components/OutputDisplayCore.vue";
-export { default as UpdaterIcon } from "./components/UpdaterIcon.vue";
-export { default as UpdaterModal } from "./components/UpdaterModal.vue";
 export { default as FullscreenDialog } from "./components/FullscreenDialog.vue";
 export { default as InputWithSelect } from "./components/InputWithSelect.vue";
 export { default as MarkdownRenderer } from "./components/MarkdownRenderer.vue";
@@ -160,37 +158,25 @@ export { clickOutside } from "./directives/clickOutside";
 // 导出 composables
 export * from "./composables";
 
-// 从core重新导出需要的内容, 仅保留工厂函数、代理类和必要的工具/类型
+// 从 core 重新导出 UI 层需要的工厂函数和工具。
 export {
   StorageFactory,
   DexieStorageProvider,
   ModelManager,
   createModelManager,
-  ElectronModelManagerProxy,
   TemplateManager,
   createTemplateManager,
-  ElectronTemplateManagerProxy,
   createTemplateLanguageService,
-  ElectronTemplateLanguageServiceProxy,
   HistoryManager,
   createHistoryManager,
-  ElectronHistoryManagerProxy,
   DataManager,
   createDataManager,
-  ElectronDataManagerProxy,
   createLLMService,
-  ElectronLLMProxy,
   createPromptService,
-  ElectronPromptServiceProxy,
   createPreferenceService,
-  ElectronPreferenceServiceProxy,
   createCompareService,
   createContextRepo,
-  ElectronContextRepoProxy,
   FavoriteManager,
-  FavoriteManagerElectronProxy,
-  isRunningInElectron,
-  waitForElectronApi,
   // 评估服务
   EvaluationService,
   createEvaluationService,

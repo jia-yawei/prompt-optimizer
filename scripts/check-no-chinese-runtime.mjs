@@ -29,17 +29,12 @@ const ENFORCED_TARGETS = [
   'packages/core/src/services/image/adapters/registry.ts',
   'packages/core/src/services/llm/adapters/registry.ts',
   'packages/core/src/services/prompt/service.ts',
-  'packages/core/src/services/template/electron-language-proxy.ts',
   'packages/core/src/services/template/languageService.ts',
   'packages/core/src/services/template/manager.ts',
   'packages/core/src/services/template/processor.ts',
   'packages/core/src/services/template/static-loader.ts',
   'packages/core/src/services/variable-extraction/service.ts',
   'packages/core/src/services/variable-value-generation/service.ts',
-  'packages/mcp-server/src/adapters/error-handler.ts',
-  'packages/mcp-server/src/adapters/parameter-adapter.ts',
-  'packages/mcp-server/src/config/templates.ts',
-  'packages/mcp-server/src/index.ts',
   'packages/ui/src/components/CategoryManager.vue',
   'packages/ui/src/components/CategoryTreeSelect.vue',
   'packages/ui/src/components/DataManager.vue',
@@ -233,6 +228,7 @@ function getTrackedFiles() {
     .split(/\r?\n/)
     .map((entry) => entry.trim())
     .filter(Boolean)
+    .filter((filePath) => fs.existsSync(path.join(process.cwd(), filePath)))
     .filter((filePath) => shouldScanPath(filePath))
 }
 

@@ -319,7 +319,6 @@ const messages = {
     "remote": {
       "title": "遠端備份",
       "webRecommendation": "Web 版推薦使用 Google Drive；S3/R2/MinIO 和 WebDAV 需要服務端允許瀏覽器跨域。",
-      "desktopRecommendation": "桌面版暫不支援 Google Drive；推薦使用 Cloudflare R2、S3/MinIO 或 WebDAV。",
       "provider": "備份方式",
       "providers": {
         "googleDrive": "Google Drive（推薦）",
@@ -413,9 +412,7 @@ const messages = {
         "s3": "Bucket：{bucket}，路徑前綴：{path}",
         "webdav": "目錄：{path}"
       },
-      "s3DesktopHelp": "桌面版透過主行程連線 S3，不需要瀏覽器 CORS。",
       "s3WebHelp": "Web 版直連 S3 需要服務端允許目前網頁跨域存取。",
-      "webdavDesktopHelp": "桌面版透過主行程連線 WebDAV，不需要 WebDAV 服務提供 CORS。",
       "webdavWebHelp": "Web 版直連 WebDAV 需要服務端允許目前網頁跨域存取。",
       "backupNow": "建立備份",
       "backupSuccess": "遠端備份成功，新增 {uploaded} 個圖片資源，跳過 {skipped} 個已有資源",

@@ -5,7 +5,7 @@
  *
  * 设计原则：
  * - 使用 Pinia 统一管理状态边界
- * - 使用 PreferenceService 进行持久化（Web/Electron 统一，异步）
+ * - 使用 PreferenceService 进行异步持久化
  * - 全量快照存储（单 key）：'global-settings/v1'
  *
  * 迁移策略（一次性，restore 时执行）：

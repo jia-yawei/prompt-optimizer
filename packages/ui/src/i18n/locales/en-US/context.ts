@@ -319,7 +319,6 @@ const messages = {
     "remote": {
       "title": "Remote Backup",
       "webRecommendation": "Google Drive is recommended for Web. S3/R2/MinIO and WebDAV require browser CORS support on the server.",
-      "desktopRecommendation": "Google Drive is not supported on Desktop yet. Use Cloudflare R2, S3/MinIO, or WebDAV instead.",
       "provider": "Backup provider",
       "providers": {
         "googleDrive": "Google Drive (Recommended)",
@@ -413,9 +412,7 @@ const messages = {
         "s3": "Bucket: {bucket}, prefix: {path}",
         "webdav": "Directory: {path}"
       },
-      "s3DesktopHelp": "Desktop connects to S3 through the main process, so browser CORS is not required.",
       "s3WebHelp": "Web direct S3 access requires the server to allow this page through CORS.",
-      "webdavDesktopHelp": "Desktop connects to WebDAV through the main process, so WebDAV CORS is not required.",
       "webdavWebHelp": "Web direct WebDAV access requires the server to allow this page through CORS.",
       "backupNow": "Create Backup",
       "backupSuccess": "Remote backup completed. Uploaded {uploaded} new image assets and skipped {skipped} existing assets.",

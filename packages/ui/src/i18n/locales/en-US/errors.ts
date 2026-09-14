@@ -108,7 +108,6 @@ const messages = {
       "import_format": "Invalid context import format: {details}",
       "invalid_store": "Invalid context store: {details}",
       "storage": "Context storage error: {details}",
-      "electron_api_unavailable": "Context service is not available in this environment"
     },
     "variable_extraction": {
       "validation": "Variable extraction validation error: {details}",
@@ -132,7 +131,6 @@ const messages = {
       "invalid_format": "Invalid data format: {details}",
       "import_partial_failed": "Import completed with {count} errors: {details}",
       "export_failed": "Data export failed: {details}",
-      "electron_api_unavailable": "Data service is not available in this environment"
     },
     "core": {
       "ipc_serialization_failed": "IPC serialization failed: {details}"

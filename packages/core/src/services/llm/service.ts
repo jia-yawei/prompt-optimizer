@@ -12,8 +12,6 @@ import type { TextModelConfig, ModelConfig } from '../model/types';
 import { ModelManager } from '../model/manager';
 import { resolveTextModelMetadata } from '../model/metadata-resolver';
 import { APIError, RequestConfigError } from './errors';
-import { isRunningInElectron } from '../../utils/environment';
-import { ElectronLLMProxy } from './electron-proxy';
 import { TextAdapterRegistry } from './adapters/registry';
 import { mergeOverrides, splitOverridesBySchema } from '../model/parameter-utils';
 
@@ -385,16 +383,7 @@ export class LLMService implements ILLMService {
  * @returns LLM服务实例
  */
 export function createLLMService(modelManager: ModelManager): ILLMService {
-  // 在Electron环境中，返回代理实例
-  if (isRunningInElectron()) {
-    console.log('[LLM Service Factory] Electron environment detected, using proxy.');
-    return new ElectronLLMProxy();
-  }
-
-  // 创建 Registry 实例
   const registry = new TextAdapterRegistry();
-
-  // 返回注入了 Registry 的 LLMService 实例
   return new LLMService(modelManager, registry);
 }
 

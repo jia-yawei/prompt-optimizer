@@ -58,7 +58,7 @@ test.describe('Image MultiImage - Session Persistence', () => {
     const fileInput = workspace.locator('input[type="file"]').first()
     await fileInput.setInputFiles([
       resolve(process.cwd(), 'tests/e2e/fixtures/images/text2image-output.png'),
-      resolve(process.cwd(), 'packages/desktop/icons/app-icon.png'),
+      resolve(process.cwd(), 'tests/e2e/fixtures/images/text2image-output.png'),
     ])
 
     await expect(workspace.getByTestId('image-multiimage-card-1')).toBeVisible({ timeout: 20000 })

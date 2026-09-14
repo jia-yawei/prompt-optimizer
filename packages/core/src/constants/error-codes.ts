@@ -80,7 +80,6 @@ export const CONTEXT_ERROR_CODES = {
   IMPORT_FORMAT_ERROR: 'error.context.import_format',
   INVALID_STORE: 'error.context.invalid_store',
   STORAGE_ERROR: 'error.context.storage',
-  ELECTRON_API_UNAVAILABLE: 'error.context.electron_api_unavailable',
 } as const;
 
 // Prompt errors | 提示词错误
@@ -170,13 +169,10 @@ export const DATA_ERROR_CODES = {
   INVALID_FORMAT: 'error.data.invalid_format',
   IMPORT_PARTIAL_FAILED: 'error.data.import_partial_failed',
   EXPORT_FAILED: 'error.data.export_failed',
-  ELECTRON_API_UNAVAILABLE: 'error.data.electron_api_unavailable',
 } as const;
 
 // Core/internal errors | 核心/内部错误
-export const CORE_ERROR_CODES = {
-  IPC_SERIALIZATION_FAILED: 'error.core.ipc_serialization_failed',
-} as const;
+export const CORE_ERROR_CODES = {} as const;
 
 // Export all error codes | 导出所有错误代码
 export const ERROR_CODES = {

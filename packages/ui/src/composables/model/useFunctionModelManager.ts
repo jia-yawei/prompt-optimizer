@@ -44,7 +44,7 @@ export interface UseFunctionModelManagerReturn {
 }
 
 // 全局单例实例（评估模型配置是全局的，所有组件共享）
-// 注意：单例模式适用于当前架构（Web/Extension/Desktop 各自独立进程/页面）
+// The Web app has a single JavaScript context, so one shared instance is sufficient.
 // 如果未来出现同一页面多宿主场景，需要改为 keyed 单例或依赖注入模式
 let instance: UseFunctionModelManagerReturn | null = null
 // 保存可更新的 globalOptimizeModelKey 引用
@@ -56,7 +56,7 @@ let globalOptimizeModelKeyRef: Ref<string> | ComputedRef<string> | null = null
  * 使用全局单例模式，因为评估模型配置是全局设置，不需要按 services 区分。
  *
  * 架构约束：
- * - 当前 Web/Extension/Desktop 各自独立运行，不共享 JS 上下文
+ * - 当前 Web 应用只有一个 JS 上下文
  * - 单例绑定首次传入的 services，后续调用复用同一实例
  * - 如需多宿主支持，可改用 resetFunctionModelManagerSingleton() 重置或改为 keyed 单例
  */

@@ -4,7 +4,6 @@ import { StorageAdapter } from '../storage/adapter';
 import { getAllModels, getBuiltinModelIds } from './defaults';
 import { ModelConfigError } from '../llm/errors';
 import { validateOverrides } from './parameter-utils';
-import { ElectronConfigManager, isElectronRenderer } from './electron-config';
 import { CORE_SERVICE_KEYS } from '../../constants/storage-keys';
 import { ImportExportError } from '../../interfaces/import-export';
 import { IMPORT_EXPORT_ERROR_CODES } from '../../constants/error-codes';
@@ -81,14 +80,6 @@ export class ModelManager implements IModelManager {
   private async init(): Promise<void> {
     try {
       console.log('[ModelManager] Initializing...');
-
-      // 在Electron渲染进程中，先同步环境变量
-      if (isElectronRenderer()) {
-        console.log('[ModelManager] Electron environment detected, syncing config from main process...');
-        const configManager = ElectronConfigManager.getInstance();
-        await configManager.syncFromMainProcess();
-        console.log('[ModelManager] Environment variables synced from main process');
-      }
 
       // 从存储中加载现有配置
       const storedData = await this.storage.getItem(this.storageKey);
@@ -303,15 +294,6 @@ export class ModelManager implements IModelManager {
    * 注意：每次调用都会重新计算，确保环境变量变化能被感知
    */
   private getDefaultModels(): Record<string, TextModelConfig> {
-    // 在Electron环境下使用配置管理器生成配置
-    if (isElectronRenderer()) {
-      const configManager = ElectronConfigManager.getInstance();
-      if (configManager.isInitialized()) {
-        // ElectronConfigManager 已支持 getAllModels()
-        return configManager.generateDefaultModels();
-      }
-    }
-
     // 调用函数重新计算（而非使用静态常量），确保环境变量变化能被感知
     return getAllModels();
   }

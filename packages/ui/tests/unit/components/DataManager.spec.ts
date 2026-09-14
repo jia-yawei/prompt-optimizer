@@ -18,11 +18,9 @@ vi.mock('../../../src/utils/remote-snapshot-backup', async (importOriginal) => {
 
 import DataManager from '../../../src/components/DataManager.vue'
 
-const isRunningInElectronMock = vi.fn(() => false)
 const getEnvVarMock = vi.fn(() => '')
 
 vi.mock('@prompt-optimizer/core', () => ({
-  isRunningInElectron: () => isRunningInElectronMock(),
   getEnvVar: (key: string) => getEnvVarMock(key),
 }))
 
@@ -195,8 +193,6 @@ const mountComponent = (services = createServices()) =>
 
 describe('DataManager storage breakdown', () => {
   beforeEach(() => {
-    isRunningInElectronMock.mockReset()
-    isRunningInElectronMock.mockReturnValue(false)
     getEnvVarMock.mockReset()
     getEnvVarMock.mockReturnValue('')
     remoteSnapshotMocks.listRemoteSnapshotBackups.mockReset()
@@ -213,12 +209,10 @@ describe('DataManager storage breakdown', () => {
         favorites: true,
       },
     })
-    delete (window as any).electronAPI
     window.localStorage.clear()
   })
 
   afterEach(() => {
-    delete (window as any).electronAPI
     delete (window as any).google
   })
 
@@ -254,36 +248,6 @@ describe('DataManager storage breakdown', () => {
     expect(text).not.toContain('Data directory')
     expect(text).not.toContain('Backup folder')
     expect(text).not.toContain('Scheduled backup')
-  })
-
-  it('shows desktop backup and storage directory actions in electron', async () => {
-    isRunningInElectronMock.mockReturnValue(true)
-    ;(window as any).electronAPI = {
-      data: {
-        getStorageInfo: vi.fn().mockResolvedValue({
-          userDataPath: 'C:/PromptOptimizer/data',
-          mainFilePath: 'C:/PromptOptimizer/data.json',
-          mainSizeBytes: 4096,
-          backupFilePath: 'C:/PromptOptimizer/data.backup.json',
-          backupSizeBytes: 512,
-          totalBytes: 4608,
-        }),
-        openStorageDirectory: vi.fn().mockResolvedValue(true),
-      },
-    }
-
-    const wrapper = mountComponent()
-
-    await flushPromises()
-
-    const text = wrapper.text()
-    expect(text).toContain('Backup Data')
-    expect(text).toContain('Data directory')
-    expect(text).toContain('Google Drive is not supported on Desktop yet')
-    expect(text).not.toContain('Authorize Google Drive')
-    expect(text).toContain('C:/PromptOptimizer/data')
-    expect(text).toContain('Open directory')
-    expect(text).toContain('Refresh')
   })
 
   it('renders backup export and import as a compact action layout', async () => {
@@ -526,46 +490,6 @@ describe('DataManager storage breakdown', () => {
     }
   })
 
-  it('opens Cloudflare R2 links in the system browser on desktop', async () => {
-    isRunningInElectronMock.mockReturnValue(true)
-    const openExternal = vi.fn().mockResolvedValue(undefined)
-    ;(window as any).electronAPI = {
-      shell: {
-        openExternal,
-      },
-    }
-    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
-    window.localStorage.setItem('prompt-optimizer:remote-backup-settings', JSON.stringify({
-      provider: {
-        kind: 'cloudflare-r2',
-        accountId: 'account-123',
-        bucket: 'prompt-optimizer-backups',
-        accessKeyId: '',
-        secretAccessKey: '',
-      },
-    }))
-
-    const wrapper = mountComponent()
-    await flushPromises()
-
-    const bucketStepButton = wrapper.findAll('button').find((button) =>
-      button.text().includes('Create a dedicated bucket and configure CORS')
-    )
-    expect(bucketStepButton).toBeTruthy()
-    await bucketStepButton!.trigger('click')
-    await flushPromises()
-
-    const bucketsButton = wrapper.findAll('button').find((button) =>
-      button.text().trim() === 'Open R2 Overview'
-    )
-    expect(bucketsButton).toBeTruthy()
-    await bucketsButton!.trigger('click')
-    await flushPromises()
-
-    expect(openExternal).toHaveBeenCalledWith('https://dash.cloudflare.com/account-123/r2/overview')
-    expect(openSpy).not.toHaveBeenCalled()
-    openSpy.mockRestore()
-  })
 
   it('restores remote backups without reusing the selected local import file sections', async () => {
     window.localStorage.setItem('prompt-optimizer:remote-backup-settings', JSON.stringify({

@@ -319,7 +319,6 @@ const messages = {
     "remote": {
       "title": "远程备份",
       "webRecommendation": "Web 版推荐使用 Google Drive；S3/R2/MinIO 和 WebDAV 需要服务端允许浏览器跨域。",
-      "desktopRecommendation": "桌面版暂不支持 Google Drive；推荐使用 Cloudflare R2、S3/MinIO 或 WebDAV。",
       "provider": "备份方式",
       "providers": {
         "googleDrive": "Google Drive（推荐）",
@@ -413,9 +412,7 @@ const messages = {
         "s3": "Bucket：{bucket}，路径前缀：{path}",
         "webdav": "目录：{path}"
       },
-      "s3DesktopHelp": "桌面版通过主进程连接 S3，不需要浏览器 CORS。",
       "s3WebHelp": "Web 版直连 S3 需要服务端允许当前网页跨域访问。",
-      "webdavDesktopHelp": "桌面版通过主进程连接 WebDAV，不需要 WebDAV 服务提供 CORS。",
       "webdavWebHelp": "Web 版直连 WebDAV 需要服务端允许当前网页跨域访问。",
       "backupNow": "创建备份",
       "backupSuccess": "远程备份成功，新增 {uploaded} 个图片资源，跳过 {skipped} 个已有资源",

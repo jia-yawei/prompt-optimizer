@@ -24,7 +24,6 @@
 import { onMounted, provide, ref, h } from 'vue'
 
 import { useI18n } from 'vue-i18n'
-import { isRunningInElectron } from '@prompt-optimizer/core'
 import { useTextModelManager } from '../composables/model/useTextModelManager'
 import TextModelList from './TextModelList.vue'
 import TextModelEditModal from './TextModelEditModal.vue'
@@ -60,11 +59,10 @@ const handleTestConnection = async (id: string) => {
     await manager.testConfigConnection(id)
   }
 
-  if (!isRunningInElectron()) {
-    const model = manager.models.value.find(m => m.id === id)
-    if (model) {
-      const isCorsRestricted = !!model.providerMeta?.corsRestricted
-      if (isCorsRestricted) {
+  const model = manager.models.value.find(m => m.id === id)
+  if (model) {
+    const isCorsRestricted = !!model.providerMeta?.corsRestricted
+    if (isCorsRestricted) {
         const providerName = getProviderDisplayName(model.providerMeta, t, 'Unknown Provider')
         dialog.warning({
           title: t('modelManager.corsRestrictedTag'),
@@ -77,7 +75,6 @@ const handleTestConnection = async (id: string) => {
           }
         })
         return
-      }
     }
   }
   await runTest()

@@ -44,7 +44,7 @@
                   {{ config.model?.name || config.modelId }}
                 </NTag>
                 <NTag
-                  v-if="config.provider?.corsRestricted && !isElectronEnv"
+                  v-if="config.provider?.corsRestricted"
                   size="small"
                   type="error"
                   round
@@ -173,7 +173,7 @@ import { useImageModelManager } from '../composables/model/useImageModelManager'
 import { useConfirmDialog } from '../composables/ui/useConfirmDialog'
 import { useToast } from '../composables/ui/useToast'
 import { getI18nErrorMessage } from '../utils/error'
-import { isRunningInElectron, type IImageService, type ImageModel } from '@prompt-optimizer/core'
+import { type IImageService, type ImageModel } from '@prompt-optimizer/core'
 import { getProviderDisplayName } from '../utils/provider-display'
 import AppPreviewImage from './media/AppPreviewImage.vue'
 
@@ -181,7 +181,6 @@ const { t } = useI18n()
 const toast = useToast()
 const dialog = useDialog()
 const confirmDialog = useConfirmDialog()
-const isElectronEnv = isRunningInElectron()
 
 // 定义事件
 const emit = defineEmits(['add', 'edit', 'clone'])
@@ -295,7 +294,7 @@ const testConnection = async (configId: string) => {
       // 根据模型能力确定测试类型
       const testType = selectTestType(config.model)
 
-      // 通过统一服务执行测试（Electron 下经 IPC 走主进程；Web 下本地执行）
+      // Execute the connection test through the shared browser service.
       const result = await imageService.testConnection(config)
 
       // 测试成功
@@ -327,8 +326,7 @@ const testConnection = async (configId: string) => {
     }
   }
 
-  if (!isRunningInElectron()) {
-    if (config?.provider?.corsRestricted) {
+  if (config?.provider?.corsRestricted) {
       dialog.warning({
         title: t('modelManager.corsRestrictedTag'),
         content: () => h('div', { style: 'white-space: pre-line;' }, t('modelManager.corsRestrictedConfirm', { provider: providerDisplayName(config) })),
@@ -340,7 +338,6 @@ const testConnection = async (configId: string) => {
         }
       })
       return
-    }
   }
 
   await runTest()

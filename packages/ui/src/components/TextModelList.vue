@@ -26,7 +26,7 @@
                 {{ model.modelMeta?.name || model.modelMeta?.id }}
               </NTag>
               <NTag
-                v-if="model.providerMeta?.corsRestricted && !isElectronEnv"
+                v-if="model.providerMeta?.corsRestricted"
                 size="small"
                 type="error"
                 round
@@ -201,7 +201,7 @@ import { type PropType } from 'vue'
 
 import { useI18n } from 'vue-i18n'
 import { NButton, NCard, NTag, NText, NSpace } from 'naive-ui'
-import { isRunningInElectron, type TextModelConfig } from '@prompt-optimizer/core'
+import { type TextModelConfig } from '@prompt-optimizer/core'
 import { getProviderDisplayName, getTextModelConfigDisplayName } from '../utils/provider-display'
 
 const { models, isTestingConnectionFor, isDefaultModel } = defineProps({
@@ -223,7 +223,6 @@ const emit = defineEmits(['test', 'edit', 'clone', 'enable', 'disable', 'delete'
 
 const { t } = useI18n()
 
-const isElectronEnv = isRunningInElectron()
 const modelDisplayName = (model: TextModelConfig) => getTextModelConfigDisplayName(model, t)
 const providerDisplayName = (model: TextModelConfig) => getProviderDisplayName(model.providerMeta, t)
 </script>

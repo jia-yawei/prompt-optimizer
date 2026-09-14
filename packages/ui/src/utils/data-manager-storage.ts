@@ -1,11 +1,9 @@
-import type { DataAPI, DataStorageInfo } from '../types/electron'
 import type { AppServices } from '../types/services'
 
 export type StorageBreakdownItemKey =
   | 'appMainData'
   | 'imageCache'
   | 'favoriteImages'
-  | 'backupData'
 
 export interface StorageBreakdownItem {
   key: StorageBreakdownItemKey
@@ -17,7 +15,6 @@ export interface StorageBreakdownItem {
 export interface StorageBreakdownSummary {
   totalBytes: number
   items: StorageBreakdownItem[]
-  desktopInfo: DataStorageInfo | null
 }
 
 interface ResolveStorageBreakdownOptions {
@@ -31,8 +28,6 @@ interface ResolveStorageBreakdownOptions {
     | 'imageStorageService'
     | 'favoriteImageStorageService'
   >
-  includeBackupData: boolean
-  electronDataApi?: Pick<DataAPI, 'getStorageInfo'> | null
 }
 
 const textEncoder = new TextEncoder()
@@ -90,24 +85,14 @@ async function getImageStorageBreakdown(
 export async function resolveDataManagerStorageBreakdown(
   options: ResolveStorageBreakdownOptions,
 ): Promise<StorageBreakdownSummary> {
-  const {
-    services,
-    includeBackupData,
-    electronDataApi = null,
-  } = options
+  const { services } = options
 
-  const [appMainDataResult, imageCacheResult, favoriteImagesResult, desktopInfoResult] =
+  const [appMainDataResult, imageCacheResult, favoriteImagesResult] =
     await Promise.allSettled([
       estimateAppMainDataBytes(services),
       getImageStorageBreakdown(services.imageStorageService),
       getImageStorageBreakdown(services.favoriteImageStorageService),
-      includeBackupData && electronDataApi?.getStorageInfo
-        ? electronDataApi.getStorageInfo()
-        : Promise.resolve(null),
     ])
-
-  const desktopInfo =
-    desktopInfoResult.status === 'fulfilled' ? desktopInfoResult.value : null
 
   const items: StorageBreakdownItem[] = [
     {
@@ -136,20 +121,10 @@ export async function resolveDataManagerStorageBreakdown(
     },
   ]
 
-  if (includeBackupData) {
-    items.push({
-      key: 'backupData',
-      bytes: desktopInfo?.backupSizeBytes ?? null,
-      count: null,
-      estimated: false,
-    })
-  }
-
   const totalBytes = items.reduce((sum, item) => sum + (item.bytes ?? 0), 0)
 
   return {
     totalBytes,
     items,
-    desktopInfo,
   }
 }

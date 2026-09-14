@@ -14,7 +14,7 @@ export type RemoteBackupProviderKind =
   | 's3-compatible'
   | 'webdav'
 
-export type RemoteBackupRuntime = 'web' | 'desktop' | 'server'
+export type RemoteBackupRuntime = 'web'
 
 export type RemoteBackupProviderConfig =
   | {
@@ -115,28 +115,6 @@ export type RemoteObjectStore = {
   getText(path: string): Promise<string>
   list(prefix: string): Promise<RemoteObjectEntry[]>
   delete?(path: string): Promise<void>
-}
-
-export type RemoteStorageIpcOperation =
-  | 'authorize'
-  | 'head'
-  | 'exists'
-  | 'put'
-  | 'get'
-  | 'getText'
-  | 'list'
-  | 'delete'
-
-export type RemoteStorageIpcRequest = {
-  provider: RemoteBackupProviderConfig
-  operation: RemoteStorageIpcOperation
-  path?: string
-  body?: ArrayBuffer | Uint8Array | string
-  contentType?: string
-}
-
-export type RemoteStorageIpcApi = {
-  invoke<T = unknown>(request: RemoteStorageIpcRequest): Promise<T>
 }
 
 export type RemoteBackupDetectionStep = {
@@ -644,16 +622,6 @@ const copyUint8ArrayToArrayBuffer = (bytes: Uint8Array): ArrayBuffer => {
   const view = new Uint8Array(bytes.byteLength)
   view.set(bytes)
   return view.buffer
-}
-
-const ipcBytesToArrayBuffer = (value: unknown): ArrayBuffer => {
-  if (value instanceof ArrayBuffer) return value.slice(0)
-  if (value instanceof Uint8Array) return copyUint8ArrayToArrayBuffer(value)
-  if (ArrayBuffer.isView(value)) {
-    return copyUint8ArrayToArrayBuffer(new Uint8Array(value.buffer, value.byteOffset, value.byteLength))
-  }
-  if (Array.isArray(value)) return copyUint8ArrayToArrayBuffer(new Uint8Array(value))
-  throw new Error('Desktop remote storage returned an unsupported binary payload')
 }
 
 const s3BodyToArrayBuffer = async (body: unknown): Promise<ArrayBuffer> => {
@@ -1472,76 +1440,6 @@ class WebDavRemoteObjectStore extends BaseRemoteObjectStore {
   }
 }
 
-class DesktopIpcRemoteObjectStore extends BaseRemoteObjectStore {
-  provider: RemoteBackupProviderKind
-
-  authorize?: () => Promise<void>
-
-  private readonly config: RemoteBackupProviderConfig
-
-  constructor(config: RemoteBackupProviderConfig) {
-    super()
-    this.config = cloneRemoteBackupProviderConfig(config)
-    this.provider = this.config.kind
-    if (this.config.kind === 'google-drive') {
-      this.authorize = async () => {
-        await this.invoke<null>('authorize', {})
-      }
-    }
-  }
-
-  async exists(path: string): Promise<boolean> {
-    return this.invoke<boolean>('exists', { path })
-  }
-
-  async head(path: string): Promise<RemoteObjectEntry | null> {
-    return this.invoke<RemoteObjectEntry | null>('head', { path })
-  }
-
-  async put(
-    path: string,
-    body: Blob | ArrayBuffer | Uint8Array | string,
-    options?: { contentType?: string },
-  ): Promise<RemoteObjectEntry> {
-    return this.invoke<RemoteObjectEntry>('put', {
-      path,
-      body: await bodyToUint8Array(body),
-      contentType: options?.contentType,
-    })
-  }
-
-  async get(path: string): Promise<ArrayBuffer> {
-    return ipcBytesToArrayBuffer(await this.invoke('get', { path }))
-  }
-
-  async getText(path: string): Promise<string> {
-    return this.invoke<string>('getText', { path })
-  }
-
-  async list(prefix: string): Promise<RemoteObjectEntry[]> {
-    return this.invoke<RemoteObjectEntry[]>('list', { path: prefix })
-  }
-
-  async delete(path: string): Promise<void> {
-    await this.invoke<null>('delete', { path })
-  }
-
-  private async invoke<T>(
-    operation: RemoteStorageIpcOperation,
-    input: Omit<RemoteStorageIpcRequest, 'provider' | 'operation'>,
-  ): Promise<T> {
-    const api = typeof window !== 'undefined' ? window.electronAPI?.remoteStorage : undefined
-    if (!api) {
-      throw new Error('Desktop remote storage IPC is unavailable')
-    }
-    return api.invoke<T>({
-      provider: cloneRemoteBackupProviderConfig(this.config),
-      operation,
-      ...input,
-    })
-  }
-}
-
 class S3CompatibleRemoteObjectStore extends BaseRemoteObjectStore {
   provider: RemoteBackupProviderKind = 's3-compatible'
   private readonly client: S3Client
@@ -1717,14 +1615,7 @@ class CloudflareR2RemoteObjectStore extends S3CompatibleRemoteObjectStore {
 
 export const createRemoteObjectStore = (
   provider: RemoteBackupProviderConfig,
-  runtime: RemoteBackupRuntime = 'web',
 ): RemoteObjectStore => {
-  if (runtime === 'desktop') {
-    if (provider.kind === 'google-drive') {
-      throw new Error('Google Drive remote backup is only supported in the Web version')
-    }
-    return new DesktopIpcRemoteObjectStore(provider)
-  }
   if (provider.kind === 'google-drive') return new GoogleDriveRemoteObjectStore(provider)
   if (provider.kind === 'cloudflare-r2') return new CloudflareR2RemoteObjectStore(provider)
   if (provider.kind === 'webdav') return new WebDavRemoteObjectStore(provider)
@@ -1733,8 +1624,7 @@ export const createRemoteObjectStore = (
 
 export const createRemoteBackupAdapter = (
   provider: RemoteBackupProviderConfig,
-  runtime: RemoteBackupRuntime = 'web',
-): RemoteBackupAdapter => createRemoteObjectStore(provider, runtime) as RemoteBackupAdapter
+): RemoteBackupAdapter => createRemoteObjectStore(provider) as RemoteBackupAdapter
 
 export const remoteBackupBlobToImportBuffer = async (blob: Blob): Promise<ArrayBuffer> =>
   blob.arrayBuffer()

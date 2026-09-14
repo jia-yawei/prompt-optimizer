@@ -189,7 +189,7 @@ export const isBrowser = (): boolean => {
  * 通过 getEnvVar 动态访问，避免 Vite 编译时内联替换（类似 VITE_APP_PLATFORM 的设计）
  *
  * 只有当 VITE_LOCAL_DEV 环境变量显式设置为 'true' 时才认为是开发环境
- * 支持多种环境：Vite、Node.js、Docker、Electron等
+ * 支持 Vite、Node.js 和 Docker 环境。
  */
 export function isDevelopment(): boolean {
   // 只检查 VITE_LOCAL_DEV 环境变量
@@ -197,95 +197,6 @@ export function isDevelopment(): boolean {
   return localDev === 'true';
 }
 
-
-/**
- * 检测是否在Electron环境中运行
- * 优先使用环境变量VITE_APP_PLATFORM，然后使用自动检测机制
- */
-export function isRunningInElectron(): boolean {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  // 第一步：检查环境变量（最高优先级）
-  const platformEnv = getEnvVar('VITE_APP_PLATFORM');
-  if (platformEnv) {
-    console.log('[isRunningInElectron] Using platform from env:', platformEnv);
-    return platformEnv === 'electron';
-  }
-
-  // 自动检测：优先检查electronAPI
-  const hasElectronAPI = typeof (window as any).electronAPI !== 'undefined';
-  if (hasElectronAPI) {
-    console.log('[isRunningInElectron] Verdict: true (via electronAPI)');
-    return true;
-  }
-
-  // 后备检测：检查更严格的Electron特征
-  const hasValidElectronProcess = typeof (window as any).process !== 'undefined' &&
-                                 (window as any).process?.type === 'renderer' &&
-                                 (window as any).process?.versions?.electron;
-
-  if (hasValidElectronProcess) {
-    console.log('[isRunningInElectron] Verdict: true (via process.versions.electron)');
-    return true;
-  }
-
-  console.log('[isRunningInElectron] Verdict: false (no Electron features detected)');
-  return false;
-}
-
-/**
- * 检测Electron API是否完全就绪
- * 不仅检测环境，还检测关键API的可用性
- */
-export function isElectronApiReady(): boolean {
-  if (!isRunningInElectron()) {
-    return false;
-  }
-
-  const window_any = window as any;
-  const hasElectronAPI = typeof window_any.electronAPI !== 'undefined';
-  const hasPreferenceApi = hasElectronAPI && typeof window_any.electronAPI.preference !== 'undefined';
-  
-  console.log('[isElectronApiReady] API readiness check:', {
-    hasElectronAPI,
-    hasPreferenceApi,
-  });
-
-  // 检查electronAPI.preference是否可用
-  return hasElectronAPI && hasPreferenceApi;
-}
-
-/**
- * 等待Electron API完全就绪
- * @param timeout 超时时间（毫秒），默认5000ms
- * @returns Promise<boolean> 是否在超时前API就绪
- */
-export function waitForElectronApi(timeout: number = 5000): Promise<boolean> {
-  return new Promise((resolve) => {
-    // 如果已经就绪，立即返回
-    if (isElectronApiReady()) {
-      console.log('[waitForElectronApi] API already ready');
-      resolve(true);
-      return;
-    }
-
-    console.log('[waitForElectronApi] Waiting for Electron API...');
-    const startTime = Date.now();
-    const checkInterval = setInterval(() => {
-      if (isElectronApiReady()) {
-        clearInterval(checkInterval);
-        console.log('[waitForElectronApi] API ready after', Date.now() - startTime, 'ms');
-        resolve(true);
-      } else if (Date.now() - startTime > timeout) {
-        clearInterval(checkInterval);
-        console.warn('[waitForElectronApi] Timeout waiting for Electron API after', timeout, 'ms');
-        resolve(false);
-      }
-    }, 50); // 每50ms检查一次
-  });
-}
 
 /**
  * 获取环境变量的通用函数
@@ -319,7 +230,7 @@ export const getEnvVar = (key: string): string => {
     // 忽略错误
   }
 
-  // 4. 产品内建默认值（覆盖 web / extension / desktop 缺省打包场景）
+  // 4. 产品内建默认值
   const defaultValue = getDefaultEnvVar(key);
   if (defaultValue) return defaultValue;
 

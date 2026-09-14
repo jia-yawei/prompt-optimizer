@@ -244,7 +244,7 @@ import {
 } from 'naive-ui'
 import { useImageModelManager } from '../composables/model/useImageModelManager'
 import { useToast } from '../composables/ui/useToast'
-import { isRunningInElectron, type ImageModelConfig } from '@prompt-optimizer/core'
+import { type ImageModelConfig } from '@prompt-optimizer/core'
 import ModelAdvancedSection from './ModelAdvancedSection.vue'
 import ProviderPillSelect from './ProviderPillSelect.vue'
 import ExternalLinkIcon from './icons/ExternalLinkIcon.vue'
@@ -321,8 +321,7 @@ const handleTestConnection = async () => {
     await performTestConnection()
   }
 
-  if (!isRunningInElectron()) {
-    if (selectedProvider.value?.corsRestricted) {
+  if (selectedProvider.value?.corsRestricted) {
       const providerName = selectedProvider.value.name || selectedProvider.value.id || 'Unknown'
       dialog.warning({
         title: t('modelManager.corsRestrictedTag'),
@@ -335,7 +334,6 @@ const handleTestConnection = async () => {
         }
       })
       return
-    }
   }
   await runTest()
 }

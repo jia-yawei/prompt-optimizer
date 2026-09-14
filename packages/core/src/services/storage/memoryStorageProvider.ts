@@ -2,7 +2,7 @@ import type { IStorageProvider } from './types';
 
 /**
  * 内存存储提供者
- * 用于 Node.js 环境（如 Electron 主进程）和测试环境
+ * 用于 Node.js 和测试环境
  * 数据仅存储在内存中，应用重启后会丢失
  */
 export class MemoryStorageProvider implements IStorageProvider {
@@ -108,4 +108,4 @@ export class MemoryStorageProvider implements IStorageProvider {
   getAllKeys(): string[] {
     return Array.from(this.storage.keys());
   }
-} 
+}

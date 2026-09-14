@@ -244,7 +244,7 @@
                 overflow: 'hidden',
             }"
             @update:content="$emit('update:optimizedPrompt', $event)"
-            @save-favorite="$emit('save-favorite', $event)"
+            :enable-favorite="false"
         />
     </NFlex>
     <!-- 迭代优化弹窗 -->

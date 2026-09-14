@@ -29,16 +29,6 @@ export const openExternalUrl = async (
   const target = options.target ?? '_blank'
   const features = options.features ?? 'noopener,noreferrer'
 
-  if (window.electronAPI?.shell?.openExternal) {
-    try {
-      await window.electronAPI.shell.openExternal(url)
-      return true
-    } catch (error) {
-      console.error(`[${prefix}] Failed to open external URL in Electron:`, error)
-      return false
-    }
-  }
-
   window.open(url, target, features)
   return true
 }

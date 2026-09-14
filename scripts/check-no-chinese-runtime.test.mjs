@@ -113,10 +113,6 @@ test('shouldScanPath includes third-batch runtime guardrail targets', () => {
     true
   )
   assert.equal(
-    shouldScanPath('packages/core/src/services/storage/fileStorageProvider.ts'),
-    true
-  )
-  assert.equal(
     shouldScanPath('packages/ui/src/composables/system/useAppInitializer.ts'),
     true
   )
@@ -190,22 +186,6 @@ test('shouldScanPath includes third-batch runtime guardrail targets', () => {
   )
   assert.equal(
     shouldScanPath('packages/core/src/services/variable-value-generation/service.ts'),
-    true
-  )
-  assert.equal(
-    shouldScanPath('packages/mcp-server/src/adapters/error-handler.ts'),
-    true
-  )
-  assert.equal(
-    shouldScanPath('packages/mcp-server/src/adapters/parameter-adapter.ts'),
-    true
-  )
-  assert.equal(
-    shouldScanPath('packages/mcp-server/src/config/templates.ts'),
-    true
-  )
-  assert.equal(
-    shouldScanPath('packages/mcp-server/src/index.ts'),
     true
   )
   assert.equal(

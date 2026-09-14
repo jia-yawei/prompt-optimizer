@@ -4,7 +4,7 @@ import { DexieStorageProvider } from './dexieStorageProvider';
 import { MemoryStorageProvider } from './memoryStorageProvider';
 import { StorageError } from './errors';
 
-export type StorageType = 'localStorage' | 'dexie' | 'memory' | 'file';
+export type StorageType = 'localStorage' | 'dexie' | 'memory';
 
 /**
  * 存储工厂类
@@ -34,12 +34,6 @@ export class StorageFactory {
         break;
       case 'memory':
         instance = new MemoryStorageProvider();
-        break;
-      case 'file':
-        throw new StorageError(
-          'File storage must be created directly with FileStorageProvider constructor',
-          'config',
-        );
         break;
       default:
         throw new StorageError(`Unsupported storage type: ${type}`, 'config', {
@@ -84,11 +78,6 @@ export class StorageFactory {
     // 检查 IndexedDB 支持
     if (typeof window !== 'undefined' && window.indexedDB) {
       types.push('dexie');
-    }
-
-    // 检查 Electron 环境支持文件存储
-    if (typeof process !== 'undefined' && process.versions?.electron) {
-      types.push('file');
     }
 
     return types;

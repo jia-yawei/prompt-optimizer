@@ -20,13 +20,11 @@
   "files": [
     "dist"
   ],
-  "readme": "On Windows, use semicolons (;) instead of && as command separators, or run the build:win script.",
   "scripts": {
     "dev": "vite",
     "build:bundle": "vite build",
     "build:types": "vue-tsc -p tsconfig.build.json",
-    "build": "pnpm run build:bundle && pnpm run build:types",
-    "build:win": "pnpm run build",
+    "build": "corepack pnpm run build:bundle && corepack pnpm run build:types",
     "test": "vitest run",
     "typecheck": "vue-tsc --noEmit",
     "lint": "eslint src --ext .ts,.vue",

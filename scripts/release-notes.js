@@ -16,8 +16,6 @@ const LOCALE_CONFIG = {
       '## Breaking Changes / Upgrade Notes',
       '## Developer Notes',
     ],
-    productSectionHeading: '## Product Updates',
-    productSubsections: ['### Desktop', '### Web', '### Extension', '### Core/Infra'],
   },
   'zh-CN': {
     fileSuffix: 'zh-CN',
@@ -30,8 +28,6 @@ const LOCALE_CONFIG = {
       '## 破坏性变更 / 升级说明',
       '## 开发者说明',
     ],
-    productSectionHeading: '## 产品更新',
-    productSubsections: ['### Desktop', '### Web', '### Extension', '### Core/Infra'],
   },
 };
 
@@ -131,43 +127,6 @@ function extractSectionBody(content, heading, nextHeading = null) {
   return section.slice(firstLineBreak + 1).trim();
 }
 
-function extractSubsectionBody(section, heading) {
-  const startIndex = getHeadingIndex(section, heading);
-  if (startIndex === -1) {
-    return null;
-  }
-
-  const bodyStart = section.indexOf('\n', startIndex);
-  if (bodyStart === -1) {
-    return '';
-  }
-
-  const remaining = section.slice(bodyStart + 1);
-  const nextSubsectionMatch = /^###\s+.+$/m.exec(remaining);
-  const body = nextSubsectionMatch
-    ? remaining.slice(0, nextSubsectionMatch.index)
-    : remaining;
-
-  return stripHtmlComments(body).trim();
-}
-
-function isNoChangeProductSubsection(body) {
-  const normalized = String(body || '')
-    .replace(/^[\s*>-]+/gm, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
-
-  if (!normalized) {
-    return true;
-  }
-
-  return (
-    /\bno\b.*\b(extension|desktop)[-\s]specific\b.*\b(user[-\s]facing\s+)?changes?\b/.test(normalized) ||
-    /本次.*没有.*(扩展端|桌面端).*变化/.test(normalized)
-  );
-}
-
 function validateHeadingOrder(block, headings, label) {
   const errors = [];
   let lastIndex = -1;
@@ -182,39 +141,6 @@ function validateHeadingOrder(block, headings, label) {
       errors.push(`${label} section has heading "${heading}" out of order.`);
     }
     lastIndex = headingIndex;
-  }
-
-  return errors;
-}
-
-function validateProductSubsectionOrder(content, locale) {
-  const config = getLocaleConfig(locale);
-  const label = locale === 'en' ? 'English' : '中文';
-  const nextHeading = config.headings[config.headings.indexOf(config.productSectionHeading) + 1] ?? null;
-  const productSection = findSection(content, config.productSectionHeading, nextHeading);
-
-  if (!productSection) {
-    return [];
-  }
-
-  const errors = [];
-  let lastIndex = -1;
-  let previousHeading = null;
-
-  for (const heading of config.productSubsections) {
-    const headingIndex = getHeadingIndex(productSection, heading);
-    if (headingIndex === -1) {
-      continue;
-    }
-    const subsectionBody = extractSubsectionBody(productSection, heading);
-    if (isNoChangeProductSubsection(subsectionBody)) {
-      continue;
-    }
-    if (headingIndex < lastIndex) {
-      errors.push(`${label} Product Updates subsection "${heading}" must appear after "${previousHeading}".`);
-    }
-    lastIndex = headingIndex;
-    previousHeading = heading;
   }
 
   return errors;
@@ -245,7 +171,6 @@ function validateReleaseNotesContent(content, version, locale, options = {}) {
   }
 
   errors.push(...validateHeadingOrder(normalizedContent, config.headings, locale === 'en' ? 'English' : '中文'));
-  errors.push(...validateProductSubsectionOrder(normalizedContent, locale));
 
   if (requireSummary) {
     const summaryBody = extractSectionBody(
@@ -443,14 +368,7 @@ function buildReleaseNotesTemplate({ version, locale, commitDraft = [] }) {
 - TODO: Summarize the most important user-facing change in English.
 
 ## Product Updates
-### Desktop
-- TODO: Add desktop-specific changes or remove this subsection if none.
-### Web
-- TODO: Add web-specific changes or remove this subsection if none.
-### Extension
-- TODO: Add extension-specific changes or remove this subsection if none.
-### Core/Infra
-- TODO: Add shared platform or infrastructure changes or remove this subsection if none.
+- TODO: Add Web application changes.
 
 ## Fixes
 - TODO: Capture the most relevant fixes in English.
@@ -478,14 +396,7 @@ ${draftingLines}
 - TODO: 用中文总结本次发布最重要的用户价值。
 
 ## 产品更新
-### Desktop
-- TODO: 填写桌面端相关变化；如果没有，可以删除这个小节。
-### Web
-- TODO: 填写 Web 端相关变化；如果没有，可以删除这个小节。
-### Extension
-- TODO: 填写扩展端相关变化；如果没有，可以删除这个小节。
-### Core/Infra
-- TODO: 填写共享基础设施或核心能力变化；如果没有，可以删除这个小节。
+- TODO: 填写 Web 应用相关变化。
 
 ## 修复
 - TODO: 用中文补充最重要的修复。
@@ -537,22 +448,6 @@ function buildTagScopedFileUrl(repository, tag, relativePath) {
   return `https://github.com/${repository}/blob/${tag}/${relativePath}`;
 }
 
-function renderMacSecurityNote(locale) {
-  if (locale === 'en') {
-    return [
-      'macOS note: if macOS reports the app as damaged or cannot verify the developer, this is usually caused by the quarantine attribute on downloaded apps. See the installation guide, or remove it after installing with `xattr -rd com.apple.quarantine /Applications/PromptOptimizer.app`; for a downloaded DMG, you can run the same command on `~/Downloads/PromptOptimizer-*.dmg` before installing.',
-    ].join('\n');
-  }
-
-  if (locale === 'zh-CN') {
-    return [
-      'macOS 备注：如果 macOS 提示“已损坏”或“无法验证开发者”，通常是下载文件的隔离属性导致。请参考安装文档；也可以在安装后执行 `xattr -rd com.apple.quarantine /Applications/PromptOptimizer.app`，或在安装前对 `~/Downloads/PromptOptimizer-*.dmg` 执行同类命令。',
-    ].join('\n');
-  }
-
-  return [renderMacSecurityNote('en'), renderMacSecurityNote('zh-CN')].join('\n');
-}
-
 function prepareReleaseNotesForGitHubBody(content, version, cwd = process.cwd()) {
   const expectedTitle = `# Prompt Optimizer ${getTagVersion(version, cwd)}`;
   return stripHtmlComments(content)
@@ -569,8 +464,6 @@ function renderGitHubReleaseBody({ cwd = process.cwd(), version, repository }) {
   const chinesePath = getReleaseNotesPath({ cwd, version: normalizedVersion, locale: 'zh-CN' });
   const englishContent = fs.readFileSync(englishPath, 'utf8').replace(/\r\n/g, '\n').trim();
   const chineseContent = fs.readFileSync(chinesePath, 'utf8').replace(/\r\n/g, '\n').trim();
-  const englishGuideUrl = buildTagScopedFileUrl(repository, tag, 'mkdocs/docs/en/deployment/desktop.md');
-  const chineseGuideUrl = buildTagScopedFileUrl(repository, tag, 'mkdocs/docs/zh/deployment/desktop.md');
   const englishBody = prepareReleaseNotesForGitHubBody(englishContent, normalizedVersion, cwd);
   const chineseBody = prepareReleaseNotesForGitHubBody(chineseContent, normalizedVersion, cwd);
 
@@ -579,7 +472,6 @@ function renderGitHubReleaseBody({ cwd = process.cwd(), version, repository }) {
     '',
     englishBody,
     '',
-    `Installation guide: [English](${englishGuideUrl}) | [中文](${chineseGuideUrl})`,
     `[Source release notes (EN)](${buildTagScopedFileUrl(repository, tag, getReleaseNotesRelativePath(normalizedVersion, 'en', cwd))})`,
     '',
     '---',
@@ -588,12 +480,7 @@ function renderGitHubReleaseBody({ cwd = process.cwd(), version, repository }) {
     '',
     chineseBody,
     '',
-    `安装文档：[English](${englishGuideUrl}) | [中文](${chineseGuideUrl})`,
     `[仓库版本说明（中文）](${buildTagScopedFileUrl(repository, tag, getReleaseNotesRelativePath(normalizedVersion, 'zh-CN', cwd))})`,
-    '',
-    '---',
-    '',
-    renderMacSecurityNote(),
     '',
   ].join('\n');
 }
@@ -697,7 +584,6 @@ module.exports = {
   main,
   normalizeVersion,
   renderGitHubReleaseBody,
-  renderMacSecurityNote,
   validateChangelogEntry,
   validateReleaseArtifacts,
   validateReleaseNotesContent,

@@ -374,7 +374,7 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
   private base64ToBlob(base64: string, mimeType: string): Blob {
     // 移除data URL前缀（如果存在）
     const cleanBase64 = base64.includes(',') ? base64.split(',')[1] : base64
-    // 兼容浏览器与 Node/Electron：优先使用 atob；否则使用 Node 的 Buffer
+    // Prefer the browser decoder and fall back to Node's Buffer for tests.
     if (typeof atob === 'function') {
       const bin = atob(cleanBase64)
       const arr = new Uint8Array(bin.length)
