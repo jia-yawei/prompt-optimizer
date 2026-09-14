@@ -683,13 +683,18 @@ defineExpose({ resetReasoningState, forceRefreshContent, forceExitEditing })
   overflow: hidden;
   color: inherit;
   border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
+  transition:
+    border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .output-copy-split-button:not(.is-disabled):hover {
-  border-color: color-mix(in srgb, currentColor 28%, transparent);
+  border-color: color-mix(in srgb, currentColor 30%, transparent);
   background: color-mix(in srgb, currentColor 6%, transparent);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .output-copy-split-button.is-disabled {
@@ -729,5 +734,9 @@ defineExpose({ resetReasoningState, forceRefreshContent, forceExitEditing })
 
 .output-copy-split-button:not(.is-disabled) :deep(.n-button:hover) {
   background: color-mix(in srgb, currentColor 8%, transparent) !important;
+}
+
+.reasoning-content {
+  border-radius: 8px;
 }
 </style>

@@ -47,7 +47,7 @@ const props = withDefaults(defineProps<Props>(), {
   type: 'default',
   size: 'medium',
   ghost: false,
-  round: true
+  round: false
 })
 
 defineEmits<{
@@ -61,11 +61,6 @@ const buttonSize = computed(() => props.size)
 
 <style scoped>
 .action-button {
-  /* 保持与原有主题系统的兼容性 */
-  transition: all 0.2s ease;
-}
-
-.action-button:hover {
-  transform: translateY(-1px);
+  letter-spacing: 0;
 }
 </style>

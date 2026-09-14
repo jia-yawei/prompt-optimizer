@@ -53,7 +53,7 @@
       <!-- 主要内容区域 - 严格控制在剩余空间内 -->
       <NLayoutContent has-sider
         style="flex: 1; min-height: 0; overflow: hidden;"
-        content-style="height: 100%; max-height: 100%; min-height: 0; box-sizing: border-box; padding: 24px clamp(16px, 2vw, 48px) 40px; display: flex; flex-direction: column; align-items: stretch; overflow: hidden;"
+        content-style="height: 100%; max-height: 100%; min-height: 0; box-sizing: border-box; padding: 20px clamp(16px, 2vw, 36px) 28px; display: flex; flex-direction: column; align-items: stretch; overflow: hidden;"
       >
         <div class="main-content-wrapper">
           <slot name="main"></slot>
@@ -149,8 +149,12 @@ const openBrandWebsite = async () => {
 
 /* 增强导航栏样式 */
 .nav-header-enhanced {
-  min-height: 64px !important;
-  padding: 12px 16px !important;
+  min-height: 60px !important;
+  padding: 10px clamp(16px, 2vw, 28px) !important;
+  background: color-mix(in srgb, var(--n-body-color) 88%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--n-border-color) 75%, transparent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(16px);
 }
 
 .nav-content {
@@ -164,17 +168,21 @@ const openBrandWebsite = async () => {
 .brand-link {
   align-items: center;
   padding: 6px 10px 6px 6px;
-  border-radius: 12px;
+  border-radius: 10px;
   color: inherit;
   transition:
-    background-color 0.2s ease-in-out,
-    box-shadow 0.2s ease-in-out,
-    transform 0.2s ease-in-out;
+    background-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .brand-link:hover {
-  background: color-mix(in srgb, var(--n-primary-color) 10%, transparent);
+  background: color-mix(in srgb, var(--n-primary-color) 8%, transparent);
   transform: translateY(-1px);
+}
+
+.brand-link:active {
+  transform: translateY(0) scale(0.985);
 }
 
 .brand-link:hover .logo-image {
@@ -182,27 +190,29 @@ const openBrandWebsite = async () => {
 }
 
 .brand-link:hover .theme-title {
-  opacity: 0.88;
+  opacity: 0.92;
 }
 
 .brand-link:focus-visible {
   outline: none;
-  background: color-mix(in srgb, var(--n-primary-color) 14%, transparent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--n-primary-color) 28%, transparent);
+  background: color-mix(in srgb, var(--n-primary-color) 12%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--n-primary-color) 20%, transparent);
 }
 
 /* Logo样式优化 */
 .logo-image {
-  border-radius: 6px;
+  border-radius: 8px;
   transition: transform 0.2s ease-in-out;
   flex-shrink: 0;
 }
 
 /* 标题文字对齐优化 */
 .theme-title {
-  line-height: 1.2 !important;
+  line-height: 1.35 !important;
   margin: 0 !important;
   white-space: nowrap;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em;
   transition: opacity 0.2s ease-in-out;
 }
 
@@ -212,14 +222,14 @@ const openBrandWebsite = async () => {
   align-items: center;
   margin-left: 16px;
   padding-left: 16px;
-  border-left: 1px solid var(--n-border-color);
+  border-left: 1px solid color-mix(in srgb, var(--n-border-color) 70%, transparent);
   min-height: 32px;
 }
 
 /* 响应式优化 */
 @media (max-width: 639px) {
   .logo-image {
-    border-radius: 4px;
+    border-radius: 6px;
   }
 
   .core-navigation {

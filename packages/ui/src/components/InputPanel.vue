@@ -4,7 +4,7 @@
         <!-- 标题区域 -->
         <NFlex justify="space-between" align="center" :wrap="false">
             <NFlex align="center" :size="8">
-                <NText :depth="1" style="font-size: 18px; font-weight: 500">{{
+                <NText :depth="1" style="font-size: 17px; font-weight: 600; line-height: 1.35">{{
                     label
                 }}</NText>
                 <!-- 🆕 帮助提示图标 -->
@@ -173,7 +173,7 @@
                     <NFlex align="center" :size="6" :wrap="false" class="input-panel-label-row">
                         <NText
                             :depth="2"
-                            style="font-size: 14px; font-weight: 500; flex-shrink: 0;"
+                            style="font-size: 13px; font-weight: 600; flex-shrink: 0;"
                             >{{ modelLabel }}</NText
                         >
                         <slot name="model-label-extra"></slot>
@@ -187,7 +187,7 @@
                 <NSpace vertical :size="8">
                     <NText
                         :depth="2"
-                        style="font-size: 14px; font-weight: 500"
+                        style="font-size: 13px; font-weight: 600"
                         >{{ templateLabel }}</NText
                     >
                     <slot name="template-select"></slot>

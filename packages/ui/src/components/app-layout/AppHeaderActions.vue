@@ -20,7 +20,7 @@
             type="default"
             size="medium"
             :ghost="false"
-            :round="true"
+            :round="false"
         />
         <ActionButtonUI
             icon="📜"
@@ -29,7 +29,7 @@
             type="default"
             size="medium"
             :ghost="false"
-            :round="true"
+            :round="false"
         />
         <ActionButtonUI
             icon="⚙️"
@@ -38,7 +38,7 @@
             type="default"
             size="medium"
             :ghost="false"
-            :round="true"
+            :round="false"
         />
     </div>
     <!-- 辅助功能区 - 使用简化样式降低视觉权重 -->
@@ -227,7 +227,7 @@ const handleOpenDocs = () => {
 }
 
 .aux-icon-button:hover {
-    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--n-primary-color) 10%, transparent);
 }
 
 .aux-icon-group {

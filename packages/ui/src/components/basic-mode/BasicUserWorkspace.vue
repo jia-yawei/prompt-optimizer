@@ -200,15 +200,26 @@ onUnmounted(() => {
 .workspace-content {
   height: 100%;
   min-height: 0;
+  gap: 16px;
 }
 
 .input-card {
   flex: 0 0 auto;
+  border-radius: 14px;
 }
 
 .result-card {
   flex: 1 1 auto;
   min-height: 280px;
   overflow: hidden;
+  border-radius: 14px;
+}
+
+.input-card :deep(.n-card__content) {
+  padding: 18px 20px;
+}
+
+.result-card :deep(.n-card__content) {
+  padding: 18px 20px 20px;
 }
 </style>
